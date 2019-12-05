@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog/1.9"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog/1.9
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.9.xsd">
+  <changeSet id="003" author="test">
+    <sql>
+        CREATE TABLE tb_team (
+            team_id serial PRIMARY KEY,
+            name varchar(80) NOT NULL,
+            created_on TIMESTAMP NOT NULL,
+            site_name varchar(25) NOT NULL,
+            real_team_id int,
+            link_id int NOT NULL,
+            FOREIGN KEY (real_team_id) REFERENCES tb_real_team (real_team_id) ON DELETE CASCADE,
+            FOREIGN KEY (link_id) REFERENCES tb_link (link_id) ON DELETE CASCADE
+        )
+    </sql>
+    <rollback>
+        <dropTable tableName="tb_team"/>
+    </rollback>
+  </changeSet>
+</databaseChangeLog>

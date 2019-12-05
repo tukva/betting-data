@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog/1.9"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog/1.9
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.9.xsd">
+  <changeSet id="006" author="test">
+    <sql>
+        CREATE TYPE status_team AS ENUM ('new', 'moderated', 'approved');
+        ALTER TABLE tb_team ADD COLUMN status status_team;
+    </sql>
+    <rollback>
+        <sql>
+            ALTER TABLE tb_team DROP COLUMN status;
+            DROP TYPE status_team;
+        </sql>
+    </rollback>
+  </changeSet>
+</databaseChangeLog>
