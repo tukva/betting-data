@@ -19,7 +19,7 @@ def mapp_func():
             data = request.args.get("data")
 
             if not data:
-                return json("Type the parse_by parameter if you want to parse something", 200)
+                return json("Type the data parameter if you want to get something", 200)
 
             data_by = None
             for field in VALID_DATA:

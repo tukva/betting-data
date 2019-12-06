@@ -25,8 +25,3 @@ services:
             POSTGRES_DB: ${POSTGRES_DB}
         ports:
             - ${POSTGRES_PORT}:${POSTGRES_PORT}
-
-    camunda:
-        image: camunda/camunda-bpm-platform:latest
-        ports:
-            - "8080:8080"

@@ -58,7 +58,7 @@ class TeamsByLink(ByLink):
         if not link or link.site_name == "UEFA":
             return json("Not Found", 404)
 
-        resp = await client.parse_team(link.link, link.attributes["cls"], link.attributes["elem"])
+        resp = await client.parse_teams(link.link, link.attributes["cls"], link.attributes["elem"])
         teams = resp.json[0]
 
         for team in teams:
@@ -107,7 +107,7 @@ class TeamsByAllLinks(ByAllLinks):
             if not link or link.site_name == "UEFA":
                 continue
 
-            resp = await client.parse_team(link.link, link.attributes["cls"], link.attributes["elem"])
+            resp = await client.parse_teams(link.link, link.attributes["cls"], link.attributes["elem"])
             teams = resp.json[0]
 
             for team in teams:
@@ -145,7 +145,7 @@ class RealTeamsByAllLinks(ByAllLinks):
         select_tb_link = await conn.execute(Data.link.select().where(Data.link.c.site_name == 'UEFA'))
         link = await select_tb_link.fetchone()
 
-        resp = await client.parse_team(link.link, link.attributes["cls"], link.attributes["elem"])
+        resp = await client.parse_teams(link.link, link.attributes["cls"], link.attributes["elem"])
         teams = resp.json[0]
 
         for team in teams:
