@@ -59,7 +59,7 @@ class TeamsByLink(ByLink):
             return json("Not Found", 404)
 
         resp = await client.parse_teams(link.link, link.attributes["cls"], link.attributes["elem"])
-        teams = resp.json[0]
+        teams = resp.json
 
         for team in teams:
             select_tb_team = await conn.execute(Data.team.select().where(and_(
@@ -108,7 +108,7 @@ class TeamsByAllLinks(ByAllLinks):
                 continue
 
             resp = await client.parse_teams(link.link, link.attributes["cls"], link.attributes["elem"])
-            teams = resp.json[0]
+            teams = resp.json
 
             for team in teams:
                 select_tb_team = await conn.execute(Data.team.select().where(and_(
@@ -146,7 +146,7 @@ class RealTeamsByAllLinks(ByAllLinks):
         link = await select_tb_link.fetchone()
 
         resp = await client.parse_teams(link.link, link.attributes["cls"], link.attributes["elem"])
-        teams = resp.json[0]
+        teams = resp.json
 
         for team in teams:
             select_tb_team = await conn.execute(Data.real_team.select().where(
