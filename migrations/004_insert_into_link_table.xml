@@ -6,20 +6,20 @@
                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.9.xsd">
   <changeSet id="004" author="test">
     <sql>
-        INSERT INTO tb_link (site_name, link, created_on, attributes)
-        VALUES ('bwin', 'https://sports.bwin.com/en/sports', NOW(), '{"elem": "a", "cls": "js-mg-tooltip"}');
+        INSERT INTO tb_link (site_name, link, created_on, attributes, type)
+        VALUES ('bwin', 'https://sports.bwin.com/en/sports', NOW(), '{"elem": "a", "class": "js-mg-tooltip"}', 'team');
 
-        INSERT INTO tb_link (site_name, link, created_on, attributes)
+        INSERT INTO tb_link (site_name, link, created_on, attributes, type)
         VALUES ('William Hill', 'https://sports.williamhill.com/betting/en-gb/football', NOW(),
-        '{"elem": "div", "cls": "btmarket__link-name btmarket__link-name--ellipsis show-for-desktop-medium"}');
+        '{"elem": "div", "class": "btmarket__link-name btmarket__link-name--ellipsis show-for-desktop-medium"}', 'team');
 
-        INSERT INTO tb_link (site_name, link, created_on, attributes)
+        INSERT INTO tb_link (site_name, link, created_on, attributes, type)
         VALUES ('Free Super Tips', 'https://www.freesupertips.com/', NOW(),
-        '{"elem": "span", "cls": "PreviewListItem__team-name"}');
+        '{"elem": "span", "class": "PreviewListItem__team-name"}', 'team');
 
-        INSERT INTO tb_link (site_name, link, created_on, attributes)
+        INSERT INTO tb_link (site_name, link, created_on, attributes, type)
         VALUES ('Betandyou', 'https://betandyou1.com/line/Football/',
-        NOW(), '{"elem": "span", "cls": "c-events__team"}');
+        NOW(), '{"elem": "span", "class": "c-events__team"}', 'team');
     </sql>
     <rollback>
         <sql>

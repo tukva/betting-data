@@ -11,7 +11,8 @@
             site_name varchar(25) NOT NULL,
             link varchar(100) NOT NULL UNIQUE,
             created_on TIMESTAMP NOT NULL,
-            attributes jsonb NOT NULL
+            attributes jsonb NOT NULL,
+            type varchar(20) NOT NULL
         )
     </sql>
     <rollback>

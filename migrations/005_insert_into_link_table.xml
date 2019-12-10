@@ -6,9 +6,9 @@
                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.9.xsd">
   <changeSet id="005" author="test">
     <sql>
-        INSERT INTO tb_link (site_name, link, created_on, attributes)
+        INSERT INTO tb_link (site_name, link, created_on, attributes, type)
         VALUES ('UEFA', 'https://en.competitions.uefa.com/memberassociations/uefarankings/club/libraries//years/2020/',
-        NOW(), '{"elem": "a", "cls": "team-name visible-md visible-lg"}');
+        NOW(), '{"elem": "a", "class": "team-name visible-md visible-lg"}', 'real_team');
     </sql>
     <rollback>
         <sql>
