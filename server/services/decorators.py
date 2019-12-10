@@ -1,47 +1,38 @@
-from collections import namedtuple
 from functools import wraps
+from http import HTTPStatus
 
 from sanic.response import json
+from marshmallow.exceptions import ValidationError
 
-from services.utils import TeamsByLink, TeamsByAllLinks, RealTeamsByAllLinks
-
-Data = namedtuple('Data', ['name', 'cls_data_by_link', 'cls_data_by_all_links'])
-teams = Data("teams", TeamsByLink, TeamsByAllLinks)
-real_teams = Data("real_teams", None, RealTeamsByAllLinks)
-
-VALID_DATA = [teams, real_teams]
+from models import tb_team, tb_real_team
+from settings import StatusTeam
+from engine import Connection
+from services.forms import ChangeStatusTeam
 
 
-def mapp_func():
+def validate_change_status_team():
     def decorator(f):
         @wraps(f)
-        async def decorated_function(request, *args, **kwargs):
-            data = request.args.get("data")
+        async def decorated_function(self, request, team_id, *args, **kwargs):
+            try:
+                ChangeStatusTeam().load(request.json)
+            except ValidationError as e:
+                return json(e.messages, HTTPStatus.UNPROCESSABLE_ENTITY)
 
-            if not data:
-                return json("Type the data parameter if you want to get something", 200)
+            async with Connection() as conn:
+                select_team = await conn.execute(tb_team.select().where(
+                    tb_team.c.team_id == team_id))
 
-            data_by = None
-            for field in VALID_DATA:
-                if field.name == data:
-                    data_by = field
+                if not select_team.rowcount:
+                    return json("Not Found", HTTPStatus.NOT_FOUND)
 
-            if not data_by:
-                return json(f"Тo such data '{data}'. "
-                            f"Valid data: {[field.name for field in VALID_DATA]}", 422)
+                if request.json.get("status") == StatusTeam.APPROVED:
+                    select_real_team = await conn.execute(tb_real_team.select().where(
+                        tb_real_team.c.real_team_id == request.json.get("real_team_id")))
 
-            if kwargs.get("link_id"):
-                if not data_by.cls_data_by_link:
-                    return json("Can not to use link", 422)
+                    if not select_real_team.rowcount:
+                        return json("real_id does not exist", HTTPStatus.UNPROCESSABLE_ENTITY)
 
-                cls = data_by.cls_data_by_link
-                return await f(request=request, cls=cls, *args, **kwargs)
-
-            if not data_by.cls_data_by_all_links:
-                return json("Can not to use all links", 422)
-
-            cls = data_by.cls_data_by_all_links
-
-            return await f(request, cls=cls, *args, **kwargs)
+            return await f(self, request, team_id, *args, **kwargs)
         return decorated_function
     return decorator
