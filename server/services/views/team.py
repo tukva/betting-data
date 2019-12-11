@@ -48,13 +48,13 @@ class TeamDetailsView(HTTPMethodView):
         team = await get_team_by_id(team_id)
         if request.json.get("status") == StatusTeam.MODERATED:
             try:
-                await Camunda.task_complete(team.process_instance_id, StatusTeam.NEW, True)
+                await Camunda.task_complete(team.team_id, StatusTeam.NEW, True)
             except CamundaException as e:
                 return json(e, HTTPStatus.UNPROCESSABLE_ENTITY)
             await moderate_team(team.team_id, request.json.get("real_team_id"), StatusTeam.MODERATED)
         else:
             try:
-                await Camunda.task_complete(team.process_instance_id, StatusTeam.MODERATED, True)
+                await Camunda.task_complete(team.team_id, StatusTeam.MODERATED, True)
             except CamundaException as e:
                 return json(e, HTTPStatus.UNPROCESSABLE_ENTITY)
             await approve_team(team.team_id, StatusTeam.APPROVED)

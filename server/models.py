@@ -30,5 +30,4 @@ tb_team = sa.Table(
     sa.Column('site_name', sa.String(25), nullable=False),
     sa.Column('real_team_id', sa.Integer, sa.ForeignKey('tb_real_team.real_team_id')),
     sa.Column('link_id', sa.Integer, sa.ForeignKey('tb_link.link_id')),
-    sa.Column('status', postgresql.ENUM('New', 'Moderated', 'Approved', name='status_team')),
-    sa.Column('process_instance_id', sa.String(40)))
+    sa.Column('status', postgresql.ENUM('New', 'Moderated', 'Approved', name='status_team')))

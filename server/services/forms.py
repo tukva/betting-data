@@ -9,7 +9,6 @@ class TeamResponseSchema(Schema):
     real_team_id = fields.Int()
     link_id = fields.Int()
     status = fields.Str()
-    process_instance_id = fields.Str()
 
 
 class ChangeStatusTeam(Schema):

@@ -93,11 +93,13 @@ async def put_teams_by_link(conn, link, process_definition_id):
                 created_on=datetime.utcnow())
             )
         else:
-            process_instance_id = await Camunda.start_process(process_definition_id)
-            await conn.execute(tb_team.insert().values(
+            insert_tb_team = await conn.execute(tb_team.insert().values(
                 name=team, site_name=link.site_name, created_on=datetime.utcnow(),
-                link_id=link.link_id, status=StatusTeam.NEW, process_instance_id=process_instance_id)
+                link_id=link.link_id, status=StatusTeam.NEW)
             )
+            insert_team = await insert_tb_team.fetchone()
+            await Camunda.start_process(process_definition_id, insert_team.team_id)
+
 
 
 async def moderate_team(team_id, real_team_id, status):
