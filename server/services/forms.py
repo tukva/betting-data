@@ -13,4 +13,4 @@ class TeamResponseSchema(Schema):
 
 class ChangeStatusTeam(Schema):
     real_team_id = fields.Int()
-    status = fields.Str(validate=validate.OneOf(["Moderated", "Approved"]), nullable=False)
+    status = fields.Str(validate=validate.OneOf(["Moderated", "Approved"]), required=True)

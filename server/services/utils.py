@@ -101,7 +101,6 @@ async def put_teams_by_link(conn, link, process_definition_id):
             await Camunda.start_process(process_definition_id, insert_team.team_id)
 
 
-
 async def moderate_team(team_id, real_team_id, status):
     async with Connection() as conn:
         await conn.execute(tb_team.update().values(

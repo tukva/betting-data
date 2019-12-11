@@ -6,7 +6,7 @@ services:
         build: server
         ports:
             - "8000:8000"
-        command: pytest
+        command: pytest -v
         depends_on:
             - test_database
         environment:

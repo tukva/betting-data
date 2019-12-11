@@ -31,6 +31,8 @@ class TeamsView(HTTPMethodView):
         if request.args.get("link_id"):
             link_id = request.args.get("link_id")
             link = await get_link_by_id(link_id, TypeLink.TEAM)
+            if not link:
+                return json("link_id does not exist", HTTPStatus.UNPROCESSABLE_ENTITY)
             async with Connection() as conn:
                 await put_teams_by_link(conn, link, process_definition_id)
         else:
