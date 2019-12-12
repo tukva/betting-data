@@ -4,14 +4,21 @@
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog/1.9
                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.9.xsd">
-  <changeSet id="005" author="test">
-    <sql>
+  <changeSet context="betting_data" id="insert_into_link_table" author="admin" dbms="postgresql">
+    <preConditions onFail="MARK_RAN">
+        <columnExists tableName="tb_link" columnName="site_name"/>
+        <columnExists tableName="tb_link" columnName="link"/>
+        <columnExists tableName="tb_link" columnName="created_on"/>
+        <columnExists tableName="tb_link" columnName="attributes"/>
+        <columnExists tableName="tb_link" columnName="type"/>
+    </preConditions>
+    <sql stripComments="true">
         INSERT INTO tb_link (site_name, link, created_on, attributes, type)
         VALUES ('UEFA', 'https://en.competitions.uefa.com/memberassociations/uefarankings/club/libraries//years/2020/',
         NOW(), '{"elem": "a", "class": "team-name visible-md visible-lg"}', 'real_team');
     </sql>
     <rollback>
-        <sql>
+        <sql stripComments="true">
             DELETE FROM tb_link WHERE site_name = 'UEFA';
         </sql>
     </rollback>

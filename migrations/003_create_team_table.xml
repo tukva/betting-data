@@ -4,10 +4,15 @@
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog/1.9
                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.9.xsd">
-  <changeSet id="003" author="test">
-    <sql>
+  <changeSet context="betting_data" id="create_team_table" author="admin" dbms="postgresql">
+    <preConditions onFail="MARK_RAN">
+        <not>
+            <tableExists tableName="tb_team"/>
+        </not>
+    </preConditions>
+    <sql stripComments="true">
         CREATE TABLE tb_team (
-            team_id serial PRIMARY KEY,
+            team_id uuid PRIMARY KEY DEFAULT md5(random()::text || clock_timestamp()::text)::uuid,
             name varchar(80) NOT NULL,
             created_on TIMESTAMP NOT NULL,
             site_name varchar(25) NOT NULL,

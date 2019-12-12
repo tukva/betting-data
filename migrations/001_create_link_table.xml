@@ -4,8 +4,13 @@
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog/1.9
                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.9.xsd">
-  <changeSet id="001" author="test">
-    <sql>
+  <changeSet context="betting_data" id="create_link_table" author="admin" dbms="postgresql">
+    <preConditions onFail="MARK_RAN">
+        <not>
+            <tableExists tableName="tb_link"/>
+        </not>
+    </preConditions>
+    <sql stripComments="true">
         CREATE TABLE tb_link (
             link_id serial PRIMARY KEY,
             site_name varchar(25) NOT NULL,

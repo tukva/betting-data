@@ -2,7 +2,7 @@ from marshmallow import Schema, fields, validate
 
 
 class TeamResponseSchema(Schema):
-    team_id = fields.Int()
+    team_id = fields.UUID()
     name = fields.Str()
     created_on = fields.DateTime()
     site_name = fields.Str()

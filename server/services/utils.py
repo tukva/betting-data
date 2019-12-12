@@ -86,7 +86,8 @@ async def put_teams_by_link(conn, link, process_definition_id):
             )
 
             insert_team = await insert_tb_team.fetchone()
-            await Camunda.start_process(process_definition_id, insert_team.team_id)
+
+            await Camunda.start_process(process_definition_id, str(insert_team.team_id))
         except psycopg2.IntegrityError:
             await conn.execute(tb_team.update().where(and_(
                 tb_team.c.name == team, tb_team.c.link_id == link.link_id)).values(
