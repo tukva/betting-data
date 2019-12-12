@@ -67,14 +67,16 @@ async def tables(test_cli):
 @pytest.fixture
 async def add_team(tables):
     async with Connection() as conn:
-        await conn.execute(tb_team.insert().values(name="Chelsea", created_on='2019-11-07T14:13:44.041152',
+        await conn.execute(tb_team.insert().values(team_id="d2c0778d-14b3-c6b1-5a72-232c9b64b680", name="Chelsea",
+                                                   created_on='2019-11-07T14:13:44.041152',
                                                    site_name="bwin", link_id=1, status="New"))
 
 
 @pytest.fixture
 async def add_team_with_moderated_status(tables):
     async with Connection() as conn:
-        await conn.execute(tb_team.insert().values(name="Chelsea", created_on='2019-11-07T14:13:44.041152',
+        await conn.execute(tb_team.insert().values(team_id="d2c0778d-14b3-c6b1-5a72-232c9b64b680", name="Chelsea",
+                                                   created_on='2019-11-07T14:13:44.041152',
                                                    site_name="bwin", link_id=1, status="Moderated"))
 
 

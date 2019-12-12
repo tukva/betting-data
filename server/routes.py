@@ -10,4 +10,4 @@ def add_routes(app):
     app.add_route(RealTeamsView.as_view(), '/real-teams')
 
     app.add_route(TeamsView.as_view(), '/teams')
-    app.add_route(TeamDetailsView.as_view(), '/teams/<team_id:int>')
+    app.add_route(TeamDetailsView.as_view(), '/teams/<team_id:uuid>')

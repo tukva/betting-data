@@ -11,7 +11,8 @@ from common.utils.camunda import Camunda
 async def test_get_teams_by_all_link(test_cli, add_team):
     resp = await test_cli.get('/teams')
 
-    response_json = [{'created_on': '2019-11-07T14:13:44.041152', 'link_id': 1, 'team_id': '1',
+    response_json = [{'created_on': '2019-11-07T14:13:44.041152', 'link_id': 1,
+                      'team_id': 'd2c0778d-14b3-c6b1-5a72-232c9b64b680',
                       'name': 'Chelsea', 'real_team_id': None, 'site_name': 'bwin', 'status': 'New'}]
 
     assert resp.status == HTTPStatus.OK
@@ -20,7 +21,8 @@ async def test_get_teams_by_all_link(test_cli, add_team):
 
 @pytest.mark.teams
 async def test_get_teams_by_link(test_cli, add_team):
-    response_json = [{'created_on': '2019-11-07T14:13:44.041152', 'link_id': 1, 'team_id': '1',
+    response_json = [{'created_on': '2019-11-07T14:13:44.041152', 'link_id': 1,
+                      'team_id': 'd2c0778d-14b3-c6b1-5a72-232c9b64b680',
                       'name': 'Chelsea', 'real_team_id': None, 'site_name': 'bwin', 'status': 'New'}]
 
     resp = await test_cli.get('/teams?link_id=1')

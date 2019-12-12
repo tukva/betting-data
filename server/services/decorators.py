@@ -18,7 +18,6 @@ def validate_change_status_team():
                 ChangeStatusTeam().load(request.json)
             except ValidationError as e:
                 return json(e.messages, HTTPStatus.UNPROCESSABLE_ENTITY)
-
             async with Connection() as conn:
                 select_team = await conn.execute(tb_team.select().where(
                     tb_team.c.team_id == team_id))
@@ -26,7 +25,7 @@ def validate_change_status_team():
                 if not select_team.rowcount:
                     return json("Not Found", HTTPStatus.NOT_FOUND)
 
-                if request.json.get("status") == StatusTeam.APPROVED:
+                if request.json.get("status") == StatusTeam.MODERATED:
                     select_real_team = await conn.execute(tb_real_team.select().where(
                         tb_real_team.c.real_team_id == request.json.get("real_team_id")))
 
