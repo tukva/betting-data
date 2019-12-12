@@ -14,7 +14,8 @@
             real_team_id int,
             link_id int NOT NULL,
             FOREIGN KEY (real_team_id) REFERENCES tb_real_team (real_team_id) ON DELETE CASCADE,
-            FOREIGN KEY (link_id) REFERENCES tb_link (link_id) ON DELETE CASCADE
+            FOREIGN KEY (link_id) REFERENCES tb_link (link_id) ON DELETE CASCADE,
+            CONSTRAINT uq_team_link UNIQUE (name, link_id)
         )
     </sql>
     <rollback>

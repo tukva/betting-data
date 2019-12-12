@@ -1,5 +1,6 @@
 from datetime import datetime
 
+import psycopg2
 from sqlalchemy import and_
 from common.rest_client.base_client_parser import BaseClientParser
 from common.utils.camunda import Camunda
@@ -63,17 +64,13 @@ async def put_real_teams_by_link(conn, link):
     teams = resp.json
 
     for team in teams:
-        select_tb_team = await conn.execute(tb_real_team.select().where(
-            tb_real_team.c.name == team
-        ))
-
-        if select_tb_team.rowcount:
-            await conn.execute(tb_real_team.update().where(tb_real_team.c.name == team).values(
-                created_on=datetime.utcnow())
-            )
-        else:
+        try:
             await conn.execute(tb_real_team.insert().values(
                 name=team, created_on=datetime.utcnow())
+            )
+        except psycopg2.IntegrityError:
+            await conn.execute(tb_real_team.update().where(tb_real_team.c.name == team).values(
+                created_on=datetime.utcnow())
             )
 
 
@@ -82,23 +79,19 @@ async def put_teams_by_link(conn, link, process_definition_id):
     teams = resp.json
 
     for team in teams:
-        select_tb_team = await conn.execute(tb_team.select().where(and_(
-            tb_team.c.name == team,
-            tb_team.c.link_id == link.link_id
-        )))
-
-        if select_tb_team.rowcount:
-            await conn.execute(tb_team.update().where(and_(
-                tb_team.c.name == team, tb_team.c.link_id == link.link_id)).values(
-                created_on=datetime.utcnow())
-            )
-        else:
+        try:
             insert_tb_team = await conn.execute(tb_team.insert().values(
                 name=team, site_name=link.site_name, created_on=datetime.utcnow(),
                 link_id=link.link_id, status=StatusTeam.NEW)
             )
+
             insert_team = await insert_tb_team.fetchone()
             await Camunda.start_process(process_definition_id, insert_team.team_id)
+        except psycopg2.IntegrityError:
+            await conn.execute(tb_team.update().where(and_(
+                tb_team.c.name == team, tb_team.c.link_id == link.link_id)).values(
+                created_on=datetime.utcnow())
+            )
 
 
 async def moderate_team(team_id, real_team_id, status):
