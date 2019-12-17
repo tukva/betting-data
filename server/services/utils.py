@@ -17,16 +17,14 @@ async def get_data(filter_data):
         return data
 
 
-async def create_real_team(data):
+async def create_update_real_team(data):
     async with Connection() as conn:
-        await conn.execute(tb_real_team.insert().values(**data))
-
-
-async def update_real_team(real_team_id):
-    async with Connection() as conn:
-        await conn.execute(tb_real_team.update().where(tb_real_team.c.real_team_id == real_team_id).values(
-            created_on=datetime.utcnow())
-        )
+        try:
+            await conn.execute(tb_real_team.insert().values(**data))
+        except psycopg2.IntegrityError:
+            await conn.execute(tb_real_team.update().where(tb_real_team.c.name == data["name"]).values(
+                created_on=datetime.utcnow())
+            )
 
 
 async def create_or_update_team(process_definition_id, data):
