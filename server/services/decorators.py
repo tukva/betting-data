@@ -4,34 +4,25 @@ from http import HTTPStatus
 from sanic.response import json
 from marshmallow.exceptions import ValidationError
 
-from models import tb_team, tb_real_team
-from settings import StatusTeam
-from engine import Connection
+from constants import StatusTeam
 from services.forms import ChangeStatusTeam
+from services.utils import real_team_exists
 
 
 def validate_change_status_team():
     def decorator(f):
         @wraps(f)
-        async def decorated_function(self, request, team_id, *args, **kwargs):
+        async def decorated_function(self, request, *args, **kwargs):
             try:
                 ChangeStatusTeam().load(request.json)
             except ValidationError as e:
                 return json(e.messages, HTTPStatus.UNPROCESSABLE_ENTITY)
-            async with Connection() as conn:
-                select_team = await conn.execute(tb_team.select().where(
-                    tb_team.c.team_id == team_id))
 
-                if not select_team.rowcount:
-                    return json("Not Found", HTTPStatus.NOT_FOUND)
+            if request.json.get("status") == StatusTeam.MODERATED:
+                real_team_id = request.json.get("real_team_id")
+                if not await real_team_exists(real_team_id):
+                    return json("real_id does not exist", HTTPStatus.UNPROCESSABLE_ENTITY)
 
-                if request.json.get("status") == StatusTeam.MODERATED:
-                    select_real_team = await conn.execute(tb_real_team.select().where(
-                        tb_real_team.c.real_team_id == request.json.get("real_team_id")))
-
-                    if not select_real_team.rowcount:
-                        return json("real_id does not exist", HTTPStatus.UNPROCESSABLE_ENTITY)
-
-            return await f(self, request, team_id, *args, **kwargs)
+            return await f(self, request, *args, **kwargs)
         return decorated_function
     return decorator

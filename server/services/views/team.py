@@ -3,61 +3,60 @@ from http import HTTPStatus
 from sanic.views import HTTPMethodView
 from sanic.response import json
 from common.utils.camunda import Camunda, CamundaException
+from common.utils.decorators import filter_data
 
-from settings import StatusTeam, TypeLink
-from engine import Connection
+from constants import StatusTeam
+from services.forms import CreateTeamSchema
 from services.forms import TeamResponseSchema
-from services.utils import get_teams, get_team_by_id, get_teams_by_link_id, moderate_team, approve_team, \
-    get_link_by_id, get_links, put_teams_by_link
 from services.decorators import validate_change_status_team
+from services.utils import get_data, update_team, create_or_update_team
+from models import tb_team
 
 
 class TeamsView(HTTPMethodView):
 
+    @filter_data(tb_team)
     async def get(self, request):
-        if request.args.get("link_id"):
-            link_id = request.args.get("link_id")
-            teams = await get_teams_by_link_id(link_id)
-        else:
-            teams = await get_teams()
-        resp = TeamResponseSchema().dump(teams, many=True)
+        sql_expr = request.get("sql_expr")
+        teams = await get_data(sql_expr)
+        resp = TeamResponseSchema().dump(teams, many=True if isinstance(teams, list) else False)
         return json(resp, HTTPStatus.OK)
 
-    async def put(self, request):
+    async def post(self, request):
         try:
             process_definition_id = await Camunda.get_process_definition_id("BetAggr")
         except CamundaException as e:
             return json(e, HTTPStatus.UNPROCESSABLE_ENTITY)
-        if request.args.get("link_id"):
-            link_id = request.args.get("link_id")
-            link = await get_link_by_id(link_id, TypeLink.TEAM)
-            if not link:
-                return json("link_id does not exist", HTTPStatus.UNPROCESSABLE_ENTITY)
-            async with Connection() as conn:
-                await put_teams_by_link(conn, link, process_definition_id)
-        else:
-            links = await get_links("team")
-            async with Connection() as conn:
-                for link in links:
-                    await put_teams_by_link(conn, link, process_definition_id)
-        return json("OK", HTTPStatus.OK)
+
+        data = CreateTeamSchema().load(request.json)
+        await create_or_update_team(data, process_definition_id)
+
+        return json("Created", HTTPStatus.CREATED)
 
 
 class TeamDetailsView(HTTPMethodView):
 
     @validate_change_status_team()
+    @filter_data(tb_team)
     async def patch(self, request, team_id):
-        team = await get_team_by_id(team_id)
-        if request.json.get("status") == StatusTeam.MODERATED:
-            try:
-                await Camunda.task_complete(team.team_id, StatusTeam.NEW, True)
-            except CamundaException as e:
-                return json(e, HTTPStatus.UNPROCESSABLE_ENTITY)
-            await moderate_team(team.team_id, request.json.get("real_team_id"), StatusTeam.MODERATED)
-        else:
-            try:
-                await Camunda.task_complete(team.team_id, StatusTeam.MODERATED, True)
-            except CamundaException as e:
-                return json(e, HTTPStatus.UNPROCESSABLE_ENTITY)
-            await approve_team(team.team_id, StatusTeam.APPROVED)
+        sql_expr = request.get("sql_expr")
+        team = await get_data(sql_expr)
+
+        if not team:
+            return json("Not Found", HTTPStatus.NOT_FOUND)
+
+        new_status = request.json.get("status")
+        complete_status = StatusTeam.NEW if new_status == StatusTeam.MODERATED else StatusTeam.MODERATED
+
+        try:
+            await Camunda.task_complete(team.team_id, complete_status, True)
+        except CamundaException as e:
+            return json(e, HTTPStatus.UNPROCESSABLE_ENTITY)
+
+        update_data = {"status": StatusTeam.MODERATED}
+        if new_status == StatusTeam.MODERATED:
+            update_data["real_team_id"] = request.json.get("real_team_id")
+
+        await update_team(team_id, **update_data)
+
         return json("OK", HTTPStatus.OK)

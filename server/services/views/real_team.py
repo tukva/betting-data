@@ -2,23 +2,30 @@ from http import HTTPStatus
 
 from sanic.views import HTTPMethodView
 from sanic.response import json
+from common.utils.decorators import filter_data
 
-from engine import Connection
-from settings import TypeLink
-from services.forms import TeamResponseSchema
-from services.utils import get_real_teams, get_links, put_real_teams_by_link
+from models import tb_real_team
+from services.forms import TeamResponseSchema, CreateRealTeamSchema
+from services.utils import get_data, update_real_team, create_real_team
 
 
 class RealTeamsView(HTTPMethodView):
 
+    @filter_data(tb_real_team)
     async def get(self, request):
-        real_teams = await get_real_teams()
-        resp = TeamResponseSchema().dump(real_teams, many=True)
+        sql_expr = request.get("sql_expr")
+        real_teams = await get_data(sql_expr)
+        resp = TeamResponseSchema().dump(real_teams, many=True if isinstance(real_teams, list) else False)
         return json(resp, HTTPStatus.OK)
 
-    async def put(self, request):
-        links = await get_links(TypeLink.REAL_TEAM)
-        async with Connection() as conn:
-            for link in links:
-                await put_real_teams_by_link(conn, link)
-        return json("OK", HTTPStatus.OK)
+    async def post(self, request):
+        data = CreateRealTeamSchema().load(request.json)
+        await create_real_team(data)
+        return json("Created", HTTPStatus.OK)
+
+
+class RealTeamDetails(HTTPMethodView):
+
+    async def put(self, request, real_team_id):
+        await update_real_team(real_team_id)
+        return json(None, HTTPStatus.NO_CONTENT)

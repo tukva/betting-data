@@ -1,109 +1,59 @@
 from datetime import datetime
 
 import psycopg2
-from sqlalchemy import and_
 from common.rest_client.base_client_parser import BaseClientParser
 from common.utils.camunda import Camunda
 
-from models import tb_team, tb_real_team, tb_link
+from models import tb_team, tb_real_team
 from engine import Connection
-from settings import StatusTeam
 
 client = BaseClientParser()
 
 
-async def get_real_teams():
+async def get_data(filter_data):
     async with Connection() as conn:
-        select_real_teams = await conn.execute(tb_real_team.select())
+        select = await conn.execute(filter_data)
+        data = await select.fetchone() if select.rowcount == 1 else await select.fetchall()
+        return data
 
-        real_teams = await select_real_teams.fetchall()
-        return real_teams
 
-
-async def get_teams():
+async def create_real_team(data):
     async with Connection() as conn:
-        select_teams = await conn.execute(tb_team.select())
-
-        teams = await select_teams.fetchall()
-        return teams
+        await conn.execute(tb_real_team.insert().values(**data))
 
 
-async def get_team_by_id(team_id):
+async def update_real_team(real_team_id):
     async with Connection() as conn:
-        select_team = await conn.execute(tb_team.select().where(
-            tb_team.c.team_id == team_id))
-
-        team = await select_team.fetchone()
-        return team
+        await conn.execute(tb_real_team.update().where(tb_real_team.c.real_team_id == real_team_id).values(
+            created_on=datetime.utcnow())
+        )
 
 
-async def get_teams_by_link_id(link_id):
+async def create_or_update_team(process_definition_id, data):
     async with Connection() as conn:
-        select_teams = await conn.execute(tb_team.select().where(tb_team.c.link_id == link_id))
-        teams = await select_teams.fetchall()
-        return teams
-
-
-async def get_links(type_link):
-    async with Connection() as conn:
-        select_tb_link = await conn.execute(tb_link.select().where(tb_link.c.type == type_link))
-        link = await select_tb_link.fetchall()
-        return link
-
-
-async def get_link_by_id(link_id, type_link):
-    async with Connection() as conn:
-        select_tb_link = await conn.execute(tb_link.select().where(and_(tb_link.c.link_id == link_id,
-                                                                        tb_link.c.type == type_link)))
-        link = await select_tb_link.fetchone()
-        return link
-
-
-async def put_real_teams_by_link(conn, link):
-    resp = await client.parse_teams(link.link, link.attributes["class"], link.attributes["elem"])
-    teams = resp.json
-
-    for team in teams:
         try:
-            await conn.execute(tb_real_team.insert().values(
-                name=team, created_on=datetime.utcnow())
-            )
-        except psycopg2.IntegrityError:
-            await conn.execute(tb_real_team.update().where(tb_real_team.c.name == team).values(
-                created_on=datetime.utcnow())
-            )
-
-
-async def put_teams_by_link(conn, link, process_definition_id):
-    resp = await client.parse_teams(link.link, link.attributes["class"], link.attributes["elem"])
-    teams = resp.json
-
-    for team in teams:
-        try:
-            insert_tb_team = await conn.execute(tb_team.insert().values(
-                name=team, site_name=link.site_name, created_on=datetime.utcnow(),
-                link_id=link.link_id, status=StatusTeam.NEW)
-            )
-
+            insert_tb_team = await conn.execute(tb_team.insert().values(**data))
             insert_team = await insert_tb_team.fetchone()
-
             await Camunda.start_process(process_definition_id, str(insert_team.team_id))
         except psycopg2.IntegrityError:
-            await conn.execute(tb_team.update().where(and_(
-                tb_team.c.name == team, tb_team.c.link_id == link.link_id)).values(
-                created_on=datetime.utcnow())
-            )
+            await conn.execute(tb_team.update().values(created_on=datetime.utcnow()).where(
+                tb_team.c.name == data["name"], tb_team.c.link_id == data["link_id"]))
 
 
-async def moderate_team(team_id, real_team_id, status):
+async def update_team(team_id, **kwargs):
     async with Connection() as conn:
-        await conn.execute(tb_team.update().values(
-            real_team_id=real_team_id, status=status).where(
+        await conn.execute(tb_team.update().values(**kwargs, created_on=datetime.utcnow()).where(
             tb_team.c.team_id == team_id))
 
 
-async def approve_team(team_id, status):
+async def real_team_exists(real_team_id):
+    flag = False
+
     async with Connection() as conn:
-        await conn.execute(tb_team.update().values(
-            status=status).where(
-            tb_team.c.team_id == team_id))
+        select_real_team = await conn.execute(tb_real_team.select().where(
+            tb_real_team.c.real_team_id == real_team_id))
+
+    if select_real_team.rowcount:
+        flag = True
+
+    return flag
