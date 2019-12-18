@@ -6,7 +6,7 @@ from common.utils.decorators import filter_data
 
 from models import tb_real_team
 from services.forms import TeamResponseSchema, CreateRealTeamSchema
-from services.utils import get_data, create_update_real_team
+from services.utils import get_data, create_or_update_real_team
 
 
 class RealTeamsView(HTTPMethodView):
@@ -20,5 +20,5 @@ class RealTeamsView(HTTPMethodView):
 
     async def post(self, request):
         data = CreateRealTeamSchema().load(request.json)
-        await create_update_real_team(data)
-        return json("Created", HTTPStatus.OK)
+        await create_or_update_real_team(data)
+        return json("OK", HTTPStatus.OK)

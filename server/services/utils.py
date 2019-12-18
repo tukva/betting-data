@@ -1,6 +1,7 @@
 from datetime import datetime
 
 import psycopg2
+from sqlalchemy import and_
 from common.rest_client.base_client_parser import BaseClientParser
 from common.utils.camunda import Camunda
 
@@ -17,7 +18,7 @@ async def get_data(filter_data):
         return data
 
 
-async def create_update_real_team(data):
+async def create_or_update_real_team(data):
     async with Connection() as conn:
         try:
             await conn.execute(tb_real_team.insert().values(**data))
@@ -30,12 +31,12 @@ async def create_update_real_team(data):
 async def create_or_update_team(process_definition_id, data):
     async with Connection() as conn:
         try:
-            insert_tb_team = await conn.execute(tb_team.insert().values(**data))
-            insert_team = await insert_tb_team.fetchone()
-            await Camunda.start_process(process_definition_id, str(insert_team.team_id))
-        except psycopg2.IntegrityError:
-            await conn.execute(tb_team.update().values(created_on=datetime.utcnow()).where(
-                tb_team.c.name == data["name"], tb_team.c.link_id == data["link_id"]))
+            insert_team = await conn.execute(tb_team.insert().values(**data).returning(tb_team.c.team_id))
+            team_id = await insert_team.fetchone()
+            await Camunda.start_process(process_definition_id, str(team_id[0]))
+        except psycopg2.errors.UniqueViolation:
+            await conn.execute(tb_team.update().values(created_on=datetime.utcnow()).where(and_(
+                tb_team.c.name == data["name"], tb_team.c.link_id == data["link_id"])))
 
 
 async def update_team(team_id, **kwargs):

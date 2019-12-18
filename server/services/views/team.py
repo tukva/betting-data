@@ -29,9 +29,9 @@ class TeamsView(HTTPMethodView):
             return json(e, HTTPStatus.UNPROCESSABLE_ENTITY)
 
         data = CreateTeamSchema().load(request.json)
-        await create_or_update_team(data, process_definition_id)
+        await create_or_update_team(process_definition_id, data)
 
-        return json("Created", HTTPStatus.CREATED)
+        return json("OK", HTTPStatus.OK)
 
 
 class TeamDetailsView(HTTPMethodView):
