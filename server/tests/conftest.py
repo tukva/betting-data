@@ -1,5 +1,4 @@
 import asyncio
-from datetime import datetime
 
 import pytest
 from sanic import Sanic
@@ -34,7 +33,7 @@ async def create_tables():
 
         await conn.execute(tb_link.insert().values(site_name="bwin",
                                                    link="https://sports.bwin.com/en/sports",
-                                                   created_on=datetime.utcnow(),
+                                                   created_on='2019-11-07T14:13:44.041152',
                                                    attributes={"elem": "a", "class": "js-mg-tooltip"},
                                                    type="team"))
 
@@ -42,7 +41,7 @@ async def create_tables():
                                                    link="https://en.competitions.uefa.com/"
                                                         "memberassociations/uefarankings/club"
                                                         "/libraries//years/2020/",
-                                                   created_on=datetime.utcnow(),
+                                                   created_on='2019-11-07T14:13:44.041152',
                                                    attributes={"elem": "a",
                                                                "class": "team-name visible-md visible-lg"},
                                                    type="real_team"))

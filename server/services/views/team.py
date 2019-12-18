@@ -8,7 +8,7 @@ from common.utils.decorators import filter_data
 from constants import StatusTeam
 from services.forms import CreateTeamSchema
 from services.forms import TeamResponseSchema
-from services.decorators import validate_change_status_team
+from services.decorators import validate_change_status_team, validate_create_team
 from services.utils import get_data, update_team, create_or_update_team
 from models import tb_team
 
@@ -22,6 +22,7 @@ class TeamsView(HTTPMethodView):
         resp = TeamResponseSchema().dump(teams, many=True if isinstance(teams, list) else False)
         return json(resp, HTTPStatus.OK)
 
+    @validate_create_team()
     async def post(self, request):
         try:
             process_definition_id = await Camunda.get_process_definition_id("BetAggr")

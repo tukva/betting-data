@@ -12,7 +12,7 @@ class TeamResponseSchema(Schema):
 
 
 class LinkResponseSchema(Schema):
-    link_id = fields.UUID()
+    link_id = fields.Int()
     site_name = fields.Str()
     link = fields.Str()
     created_on = fields.DateTime()
@@ -24,7 +24,6 @@ class CreateTeamSchema(Schema):
     name = fields.Str(validate=validate.Length(min=2, max=80), required=True, nullable=False)
     site_name = fields.Str(validate=validate.Length(min=2, max=25), required=True, nullable=False)
     link_id = fields.Int(required=True, nullable=False)
-    status = 'New'
 
 
 class CreateRealTeamSchema(Schema):

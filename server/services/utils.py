@@ -5,7 +5,8 @@ from sqlalchemy import and_
 from common.rest_client.base_client_parser import BaseClientParser
 from common.utils.camunda import Camunda
 
-from models import tb_team, tb_real_team
+from models import tb_team, tb_real_team, tb_link
+from constants import StatusTeam
 from engine import Connection
 
 client = BaseClientParser()
@@ -31,7 +32,8 @@ async def create_or_update_real_team(data):
 async def create_or_update_team(process_definition_id, data):
     async with Connection() as conn:
         try:
-            insert_team = await conn.execute(tb_team.insert().values(**data).returning(tb_team.c.team_id))
+            insert_team = await conn.execute(tb_team.insert().values(
+                **data, status=StatusTeam.NEW).returning(tb_team.c.team_id))
             team_id = await insert_team.fetchone()
             await Camunda.start_process(process_definition_id, str(team_id[0]))
         except psycopg2.errors.UniqueViolation:
@@ -53,6 +55,19 @@ async def real_team_exists(real_team_id):
             tb_real_team.c.real_team_id == real_team_id))
 
     if select_real_team.rowcount:
+        flag = True
+
+    return flag
+
+
+async def link_exists(link_id):
+    flag = False
+
+    async with Connection() as conn:
+        select_link = await conn.execute(tb_link.select().where(
+            tb_link.c.link_id == link_id))
+
+    if select_link.rowcount:
         flag = True
 
     return flag
