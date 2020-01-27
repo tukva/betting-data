@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog/1.9"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog/1.9
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.9.xsd">
+  <changeSet context="betting_data" id="insert_into_link_table" author="admin" dbms="postgresql">
+    <preConditions onFail="MARK_RAN">
+        <columnExists tableName="tb_link" columnName="site_name"/>
+        <columnExists tableName="tb_link" columnName="link"/>
+        <columnExists tableName="tb_link" columnName="created_on"/>
+        <columnExists tableName="tb_link" columnName="attributes"/>
+        <columnExists tableName="tb_link" columnName="type"/>
+    </preConditions>
+    <sql stripComments="true">
+        INSERT INTO tb_link (site_name, link, created_on, attributes, type)
+        VALUES ('bwin', 'https://sports.bwin.com/en/sports', NOW(), '{"elem": "a", "class": "js-mg-tooltip"}', 'team');
+
+        INSERT INTO tb_link (site_name, link, created_on, attributes, type)
+        VALUES ('William Hill', 'https://sports.williamhill.com/betting/en-gb/football', NOW(),
+        '{"elem": "div", "class": "btmarket__link-name btmarket__link-name--ellipsis show-for-desktop-medium"}', 'team');
+
+        INSERT INTO tb_link (site_name, link, created_on, attributes, type)
+        VALUES ('Free Super Tips', 'https://www.freesupertips.com/', NOW(),
+        '{"elem": "span", "class": "PreviewListItem__team-name"}', 'team');
+
+        INSERT INTO tb_link (site_name, link, created_on, attributes, type)
+        VALUES ('Betandyou', 'https://betandyou1.com/line/Football/',
+        NOW(), '{"elem": "span", "class": "c-events__team"}', 'team');
+    </sql>
+    <rollback>
+        <sql stripComments="true">
+            DELETE FROM tb_link WHERE link = 'https://sports.bwin.com/en/sports';
+            DELETE FROM tb_link WHERE link = 'https://sports.williamhill.com/betting/en-gb/football';
+            DELETE FROM tb_link WHERE link = 'https://www.freesupertips.com/';
+            DELETE FROM tb_link WHERE link = 'https://betandyou1.com/line/Football/';
+        </sql>
+    </rollback>
+  </changeSet>
+</databaseChangeLog>
