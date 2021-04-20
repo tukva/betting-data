@@ -27,7 +27,7 @@ multidict==4.6.1
 packaging==19.1
 pluggy==0.13.0
 psycopg2-binary==2.8.3
-py==1.8.0
+py==1.10.0
 pyparsing==2.4.2
 PySnooper==0.2.8
 pytest==5.1.2
